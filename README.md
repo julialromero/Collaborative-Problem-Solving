@@ -1,13 +1,15 @@
 # Collaborative-Problem-Solving
 
 
+
+
 **Levels_PP_Logs_Lab.csv**
-Level attempts with start/end times, level duration, and if trophy was won
 - 1220 examples
+Level attempts with start/end times, level duration, and if trophy was won
 
 **equally_weighted_60_10.csv**
-This file is a modified version of "Levels_PP_Logs_Lab.csv" according to the description from:
 - 789 examples
+This file is a modified version of "Levels_PP_Logs_Lab.csv" according to the description from:
 
 Multimodal, Multiparty Modeling of Collaborative Problem Solving Performance
 https://www.dropbox.com/s/pf3kwr08c9j5s0j/subburaj-icmi20.pdf?dl=0
