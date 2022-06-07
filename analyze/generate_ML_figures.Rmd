@@ -1,0 +1,239 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# Load libraries
+library(ggplot2)
+library(svglite)
+
+```
+
+```{r}
+# Helper functions
+#define Min-Max normalization function
+min_max_norm <- function(x) {
+    (x - min(x)) / (max(x) - min(x))
+  }
+
+```
+
+```{r}
+res <- 144
+
+# Load Observed vs. Predicted for all models
+RESULTS <- "/Users/angelina/Dropbox (Emotive Computing)/CPS_Gaze_Fixations/RQA/Collaborative-Problem-Solving/results/task_score/RAW/"
+
+RFR <- read.csv( paste0(RESULTS, "/RFR/RFR_TaskScore_True_vs_Pred_16.csv") )
+
+LR <- read.csv( paste0(RESULTS, "/LR/LR_TaskScore_True_vs_Pred_1.csv") )
+
+SVR <- read.csv( paste0(RESULTS, "/SVR/SVR_TaskScore_True_vs_Pred_18.csv") )
+
+# Normalized Task Score
+RESULTS_NORM <- "/Users/angelina/Dropbox (Emotive Computing)/CPS_Gaze_Fixations/RQA/Collaborative-Problem-Solving/results/task_score_norm/RAW/"
+
+RFR_norm <- read.csv( paste0(RESULTS_NORM, "/RFR/RFR_TaskScore_True_vs_Pred_2.csv") )
+
+LR_norm <- read.csv( paste0(RESULTS_NORM, "/LR/LR_TaskScore_True_vs_Pred_1.csv") )
+
+SVR_norm <- read.csv( paste0(RESULTS_NORM, "/SVR/SVR_TaskScore_True_vs_Pred_3.csv") )
+
+## Min-Max Normalization
+RFR_norm_task_score <- lapply(RFR_norm[3:3], min_max_norm)
+RFR_norm$task_score = RFR_norm_task_score$task_score
+
+LR_norm_task_score <- lapply(LR_norm[3:3], min_max_norm)
+LR_norm$task_score = LR_norm_task_score$task_score
+
+SVR_norm_task_score <- lapply(SVR_norm[3:3], min_max_norm)
+SVR_norm$task_score = SVR_norm_task_score$task_score
+
+
+```
+
+
+```{r}
+# Get observed label counts
+table(RFR$task_score)
+
+```
+
+
+
+```{r}
+# Random Forest Regression
+# svglite(paste0(RESULTS, "/RFR/RFR_TaskScore_True_vs_Pred_16_scatter.svg"), width = 1080/res, height = 720/res)
+jpeg(paste0(RESULTS, "/RFR/RFR_TaskScore_True_vs_Pred_16_scatter.jpg"), width = 480, height = 300)
+ggplot(RFR, aes(task_score, prediction)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x="Observed", y="Predicted", title="Random Forest Regression (m = 0.160, r = 0.329)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+dev.off()
+
+# Linear Regression
+# svglite(paste0(RESULTS, "/LR/LR_TaskScore_True_vs_Pred_1_scatter.svg"), width = 1080/res, height = 720/res)
+jpeg(paste0(RESULTS, "/LR/LR_TaskScore_True_vs_Pred_1_scatter.jpg"), width = 480, height = 300)
+ggplot(LR, aes(task_score, prediction)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x="Observed", y="Predicted", title="Linear Regression (m = 0.188, r = 0.413)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+dev.off()
+
+# Support Vector Machine Regression
+# svglite(paste0(RESULTS, "/SVR/SVR_TaskScore_True_vs_Pred_18_scatter.svg"), width = 1080/res, height = 720/res)
+jpeg(paste0(RESULTS, "/SVR/SVR_TaskScore_True_vs_Pred_18_scatter.jpg"), width = 480, height = 300)
+ggplot(SVR, aes(task_score, prediction)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x="Observed", y="Predicted", title="Support Vector Machine Regression (m = 0.021, r = 0.279)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+dev.off()
+
+
+```
+
+```{r}
+# Melt data frames for histograms
+RFR_melt = melt(RFR[,3:4])
+LR_melt = melt(LR[,3:4])
+SVR_melt = melt(SVR[,4:5])
+
+RFR_norm_melt = melt(RFR_norm[,3:4])
+LR_norm_melt = melt(LR_norm[,3:4])
+SVR_norm_melt = melt(SVR_norm[,3:4])
+
+```
+
+
+```{r}
+# Random Forest
+jpeg(paste0(RESULTS, "/RFR/RFR_TaskScore_True_vs_Pred_16_hist.jpg"), width = 480, height = 300)
+ggplot(data = RFR_melt) +
+  geom_histogram(aes(x = value, y=(..count..)/sum(..count..), fill=variable), 
+                 alpha=0.3, binwidth=2, position="identity") +
+  geom_density(aes(x = value, colour=variable), alpha=0.3) +
+  theme_bw() +
+  labs(x="Value", y="Density", title="Random Forest Regression") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = c(0.88, 0.84),
+        legend.background = element_rect(fill = "white", color = "black"))
+dev.off()
+
+# Linear Regression
+jpeg(paste0(RESULTS, "/LR/LR_TaskScore_True_vs_Pred_1_scatter.jpg"), width = 480, height = 300)
+ggplot(data = LR_melt) +
+  geom_histogram(aes(x = value, y=(..count..)/sum(..count..), fill=variable), 
+                 alpha=0.3, binwidth=2, position="identity") +
+  geom_density(aes(x = value, colour=variable), alpha=0.3) +
+  theme_bw() +
+  labs(x="Value", y="Density", title="Linear Regression") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = c(0.88, 0.84),
+        legend.background = element_rect(fill = "white", color = "black"))
+dev.off()
+
+
+
+# Support Vector Machine
+jpeg(paste0(RESULTS, "/SVR/SVR_TaskScore_True_vs_Pred_18_scatter.jpg"), width = 480, height = 300)
+ggplot(data = SVR_melt) +
+  geom_histogram(aes(x = value, y=(..count..)/sum(..count..), fill=variable), 
+                 alpha=0.3, binwidth=2, position="identity") +
+  geom_density(aes(x = value, colour=variable), alpha=0.3) +
+  theme_bw() +
+  labs(x="Value", y="Density", title="Support Vector Machine") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = c(0.88, 0.84),
+        legend.background = element_rect(fill = "white", color = "black"))
+dev.off()
+
+
+
+#### Normalized Task Score ####
+
+# Random Forest
+ggplot(data = RFR_norm_melt) +
+  geom_histogram(aes(x = value, y=(..count..)/sum(..count..), fill=variable), 
+                 alpha=0.3, binwidth=2, position="identity") +
+  geom_density(aes(x = value, colour=variable), alpha=0.3) +
+  theme_bw() +
+  labs(x="Value", y="Density", title="Random Forest Regression") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = c(0.88, 0.84),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+# Linear Regression
+ggplot(data = LR_norm_melt) +
+  geom_histogram(aes(x = value, y=(..count..)/sum(..count..), fill=variable), 
+                 alpha=0.3, binwidth=2, position="identity") +
+  geom_density(aes(x = value, colour=variable), alpha=0.3) +
+  theme_bw() +
+  labs(x="Value", y="Density", title="Linear Regression") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = c(0.88, 0.84),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+# Support Vector Machine
+ggplot(data = SVR_norm_melt) +
+  geom_histogram(aes(x = value, y=(..count..)/sum(..count..), fill=variable), 
+                 alpha=0.3, binwidth=2, position="identity") +
+  geom_density(aes(x = value, colour=variable), alpha=0.3) +
+  theme_bw() +
+  labs(x="Value", y="Density", title="Support Vector Machine") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = c(0.88, 0.84),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+
+```
+
+
+
+
+
+```{r}
+# Random Forest Regression - Normalized Task Score
+# svglite(paste0(RESULTS_NORM, "/RFR/RFR_TaskScore_True_vs_Pred_2_scatter.svg"), width = 1080/res, height = 720/res)
+jpeg(paste0(RESULTS_NORM, "/RFR/RFR_TaskScore_True_vs_Pred_2_scatter.jpg"), width = 480, height = 300)
+ggplot(RFR_norm, aes(task_score, prediction)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x="Observed", y="Predicted", title="Random Forest Regression (m = 0.154, r = 0.329)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+dev.off()
+
+# Linear Regression - Normalized Task Score
+# svglite(paste0(RESULTS_NORM, "/LR/LR_TaskScore_True_vs_Pred_1_scatter.svg"), width = 1080/res, height = 720/res)
+jpeg(paste0(RESULTS_NORM, "/LR/LR_TaskScore_True_vs_Pred_1_scatter.jpg"), width = 480, height = 300)
+ggplot(LR_norm, aes(task_score, prediction)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x="Observed", y="Predicted", title="Linear Regression (m = 0.188, r = 0.413)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+dev.off()
+
+# Support Vector Machine Regression - Normalized Task Score
+# svglite(paste0(RESULTS_NORM, "/SVR/SVR_TaskScore_True_vs_Pred_3_scatter.svg"), width = 1080/res, height = 720/res)
+jpeg(paste0(RESULTS_NORM, "/SVR/SVR_TaskScore_True_vs_Pred_3_scatter.jpg"), width = 480, height = 300)
+ggplot(SVR_norm, aes(task_score, prediction)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x="Observed", y="Predicted", title="Support Vector Machine Regression (m = 0.099, r = 0.279)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+dev.off()
+
+```
+
